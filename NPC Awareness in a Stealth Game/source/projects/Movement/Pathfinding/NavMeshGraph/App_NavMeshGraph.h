@@ -11,6 +11,7 @@
 
 class NavigationColliderElement;
 class SteeringAgent;
+class SteeringNpcAgent;
 class Seek;
 class Arrive;
 
@@ -43,7 +44,7 @@ private:
 	float m_AgentRadius = 1.0f;
 	float m_AgentSpeed = 16.0f;
 
-	std::vector<SteeringAgent*> m_pNpcAgents{};
+	std::vector<SteeringNpcAgent*> m_pNpcAgents{};
 	// --Level--
 	std::vector<NavigationColliderElement*> m_vNavigationColliders = {};
 

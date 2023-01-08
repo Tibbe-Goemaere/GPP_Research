@@ -6,7 +6,7 @@ using namespace Elite;
 #include "App_NavMeshGraph.h"
 #include "projects/Shared/NavigationColliderElement.h"
 
-#include "projects/Movement/SteeringBehaviors/SteeringAgent.h"
+#include "projects/Movement/SteeringBehaviors/SteeringNpcAgent.h"
 #include "projects/Movement/SteeringBehaviors/Steering/SteeringBehaviors.h"
 
 #include "framework\EliteAI\EliteNavigation\Algorithms\ENavGraphPathfinding.h"
@@ -69,8 +69,9 @@ void App_NavMeshGraph::Start()
 	m_pAgent->SetAutoOrient(true);
 	m_pAgent->SetMass(0.1f);
 	//----------- NPC's ------------
-	SteeringAgent* agent = new SteeringAgent();
+	SteeringNpcAgent* agent = new SteeringNpcAgent();
 	agent->SetPosition(Vector2{20,20});
+	agent->SetVisionCone(VisionCone{ agent->GetRotation() ,agent->GetPosition()});
 	m_pNpcAgents.push_back(agent);
 }
 
@@ -173,6 +174,8 @@ void App_NavMeshGraph::Render(float deltaTime) const
 	{
 		npc->Render(deltaTime);
 	}
+
+	//std::cout << m_pAgent->GetRotation() << "\n";
 }
 
 void App_NavMeshGraph::UpdateImGui()
