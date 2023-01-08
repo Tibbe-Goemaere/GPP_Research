@@ -25,13 +25,15 @@ public:
 
 	//Seek Functions
 	void SetTarget(const TargetData& target) { m_Target = target; }
-
+	//Patrol Functions
+	void SetTargets(const TargetData& target, const TargetData& target2) { m_Target = target; m_Target2 = target2; }
 	template<class T, typename std::enable_if<std::is_base_of<ISteeringBehavior, T>::value>::type* = nullptr>
 	T* As()
 	{ return static_cast<T*>(this); }
 
 protected:
 	TargetData m_Target;
+	TargetData m_Target2;
 };
 #pragma endregion
 
@@ -58,7 +60,7 @@ public:
 	Flee() = default;
 	virtual ~Flee() = default;
 
-	//Seek Behaviour
+	//Flee Behaviour
 	SteeringOutput CalculateSteering(float deltaT, SteeringAgent* pAgent) override;
 };
 
@@ -72,7 +74,7 @@ public:
 	Arrive() = default;
 	virtual ~Arrive() = default;
 
-	//Seek Behaviour
+	//Arrive Behaviour
 	SteeringOutput CalculateSteering(float deltaT, SteeringAgent* pAgent) override;
 };
 
@@ -86,7 +88,7 @@ public:
 	Face() = default;
 	virtual ~Face() = default;
 
-	//Seek Behaviour
+	//Face Behaviour
 	SteeringOutput CalculateSteering(float deltaT, SteeringAgent* pAgent) override;
 };
 
@@ -100,7 +102,7 @@ public:
 	Wander() = default;
 	virtual ~Wander() = default;
 
-	//Seek Behaviour
+	//Wander Behaviour
 	SteeringOutput CalculateSteering(float deltaT, SteeringAgent* pAgent) override;
 
 	void SetWanderOffset(float offset);
@@ -124,7 +126,7 @@ public:
 	Pursuit() = default;
 	virtual ~Pursuit() = default;
 
-	//Seek Behaviour
+	//Pursuit Behaviour
 	SteeringOutput CalculateSteering(float deltaT, SteeringAgent* pAgent) override;
 };
 
@@ -138,11 +140,26 @@ public:
 	Evade() = default;
 	virtual ~Evade() = default;
 
-	//Seek Behaviour
+	//Evade Behaviour
 	SteeringOutput CalculateSteering(float deltaT, SteeringAgent* pAgent) override;
 	void SetEvadeRadius(float evadeRadius) { m_EvadeRadius = evadeRadius; };
 private:
 	float m_EvadeRadius = 10.f;
+};
+
+///////////////////////////////////////
+//PATROL
+//******
+class Patrol : public ISteeringBehavior
+{
+public:
+	Patrol() = default;
+	virtual ~Patrol() = default;
+
+	//Patrol Behaviour
+	SteeringOutput CalculateSteering(float deltaT, SteeringAgent* pAgent) override;
+private:
+	bool m_IsGoingToFirstTarget{ true };
 };
 #endif
 

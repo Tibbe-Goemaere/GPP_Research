@@ -14,6 +14,7 @@ class SteeringAgent;
 class SteeringNpcAgent;
 class Seek;
 class Arrive;
+class Patrol;
 
 namespace Elite
 {
@@ -40,11 +41,13 @@ private:
 	SteeringAgent* m_pAgent = nullptr;
 	Seek* m_pSeekBehavior = nullptr;
 	Arrive* m_pArriveBehavior = nullptr;
+	Patrol* m_pPatrolBehavior = nullptr;
 	TargetData m_Target = {};
 	float m_AgentRadius = 1.0f;
 	float m_AgentSpeed = 16.0f;
 
 	std::vector<SteeringNpcAgent*> m_pNpcAgents{};
+	float m_NpcSpeed = 10.0f;
 	// --Level--
 	std::vector<NavigationColliderElement*> m_vNavigationColliders = {};
 

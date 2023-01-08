@@ -13,16 +13,6 @@ void SteeringNpcAgent::Render(float dt)
 	m_pVisionCone->Render();
 }
 
-Elite::Vector2 SteeringNpcAgent::GetOldPos() const
-{
-	return SteeringAgent::GetOldPos();
-}
-
-void SteeringNpcAgent::SetOldPos(Elite::Vector2 oldPos)
-{
-	SteeringAgent::SetOldPos(oldPos);
-}
-
 void SteeringNpcAgent::SetVisionCone(const VisionCone& visionCone)
 {
 	m_pVisionCone = new VisionCone(visionCone);

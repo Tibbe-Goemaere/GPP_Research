@@ -69,9 +69,15 @@ void App_NavMeshGraph::Start()
 	m_pAgent->SetAutoOrient(true);
 	m_pAgent->SetMass(0.1f);
 	//----------- NPC's ------------
+	m_pPatrolBehavior = new Patrol();
 	SteeringNpcAgent* agent = new SteeringNpcAgent();
 	agent->SetPosition(Vector2{20,20});
 	agent->SetVisionCone(VisionCone{ agent->GetRotation() ,agent->GetPosition()});
+	m_pPatrolBehavior->SetTargets(Vector2{20,20},Vector2{40,20});
+	agent->SetSteeringBehavior(m_pPatrolBehavior);
+	agent->SetMaxLinearSpeed(m_NpcSpeed);
+	agent->SetAutoOrient(true);
+	agent->SetMass(0.1f);
 	m_pNpcAgents.push_back(agent);
 }
 
@@ -111,6 +117,7 @@ void App_NavMeshGraph::Update(float deltaTime)
 	
 	UpdateImGui();
 	m_pAgent->Update(deltaTime);
+
 	for (auto npc : m_pNpcAgents)
 	{
 		npc->Update(deltaTime);

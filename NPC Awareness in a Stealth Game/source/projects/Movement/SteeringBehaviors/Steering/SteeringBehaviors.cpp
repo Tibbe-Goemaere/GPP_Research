@@ -212,3 +212,38 @@ SteeringOutput Evade::CalculateSteering(float deltaT, SteeringAgent* pAgent)
 
 	return steering;
 }
+
+//PATROL
+//******
+SteeringOutput Patrol::CalculateSteering(float deltaT, SteeringAgent* pAgent)
+{
+	SteeringOutput steering = {};
+
+	if (m_IsGoingToFirstTarget)
+	{
+		steering.LinearVelocity = m_Target.Position - pAgent->GetPosition();
+		steering.LinearVelocity.Normalize();
+		steering.LinearVelocity *= pAgent->GetMaxLinearSpeed();
+		if (pAgent->GetPosition().DistanceSquared(m_Target.Position) <= pAgent->GetRadius() * pAgent->GetRadius())
+		{
+			m_IsGoingToFirstTarget = false;
+		}
+	}
+	else
+	{
+		steering.LinearVelocity = m_Target2.Position - pAgent->GetPosition();
+		steering.LinearVelocity.Normalize();
+		steering.LinearVelocity *= pAgent->GetMaxLinearSpeed();
+		if (pAgent->GetPosition().DistanceSquared(m_Target2.Position) <= pAgent->GetRadius() * pAgent->GetRadius())
+		{
+			m_IsGoingToFirstTarget = true;
+		}
+	}
+
+	if (pAgent->CanRenderBehavior())
+	{
+		DEBUGRENDERER2D->DrawDirection(pAgent->GetPosition(), steering.LinearVelocity, 5, { 0,1,0 });
+	}
+
+	return steering;
+}
