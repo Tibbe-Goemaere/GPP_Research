@@ -325,9 +325,31 @@ void SDLDebugRenderer2D::DrawCircle(const Elite::Vector2& center, float radius, 
 	}
 }
 
-void SDLDebugRenderer2D::DrawSolidCircle(const Elite::Vector2& center, float radius, const Elite::Vector2& axis, const Color& color, float depth)
+void Elite::SDLDebugRenderer2D::DrawArc(const Elite::Vector2& center, float radius, float startAngle, float endAngle, const Color& color, float depth)
 {
 	const auto k_segments = 16.0f;
+	const auto k_increment = 2.0f * b2_pi / k_segments;
+	const auto sinInc = sinf(k_increment);
+	const auto cosInc = cosf(k_increment);
+	Elite::Vector2 r1(1.0f, 0.0f);
+	Elite::Vector2 v1 = center + radius * r1;
+	for (auto i = 0; i < k_segments; ++i)
+	{
+		// Perform rotation to avoid additional trigonometry.
+		Elite::Vector2 r2;
+		r2.x = cosInc * r1.x - sinInc * r1.y;
+		r2.y = sinInc * r1.x + cosInc * r1.y;
+		const Elite::Vector2 v2 = center + radius * r2;
+		m_vLines.push_back(Vertex(v1, depth, color));
+		m_vLines.push_back(Vertex(v2, depth, color));
+		r1 = r2;
+		v1 = v2;
+	}
+}
+
+void SDLDebugRenderer2D::DrawSolidCircle(const Elite::Vector2& center, float radius, const Elite::Vector2& axis, const Color& color, float depth)
+{
+	const auto k_segments = 32.0f;
 	const auto k_increment = 2.0f * b2_pi / k_segments;
 	const auto sinInc = sinf(k_increment);
 	const auto cosInc = cosf(k_increment);

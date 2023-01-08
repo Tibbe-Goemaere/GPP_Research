@@ -10,7 +10,7 @@ DebugRenderer2D.h: OpenGL immediate 2D debug renderer, used for drawing 2D shape
 //--- Includes ---
 #include "../../EDebugRenderer2D.h"
 #include "../../ERenderingTypes.h"
-#include "../../../EliteGeometry/EGeometry2DTypes.h"
+#include "framework/EliteGeometry/EGeometry2DTypes.h"
 #include "../../Shaders.h"
 
 namespace Elite
@@ -36,6 +36,7 @@ namespace Elite
 		void DrawSolidPolygon(const Elite::Polygon* polygon, const Color& color, float depth);
 		void DrawSolidPolygon(const Elite::Vector2* points, int count, const Color& color, float depth, bool triangulate = false);
 		void DrawCircle(const Elite::Vector2& center, float radius, const Color& color, float depth);
+		void DrawArc(const Elite::Vector2& center, float radius, float startAngle, float endAngle, const Color& color, float depth);
 		void DrawSolidCircle(const Elite::Vector2& center, float radius, const Elite::Vector2& axis, const Color& color, float depth);
 		void DrawSolidCircle(const Elite::Vector2& center, float radius, const Elite::Vector2& axis, const Color& color);
 		void DrawSegment(const Elite::Vector2& p1, const Elite::Vector2& p2, const Color& color, float depth);
