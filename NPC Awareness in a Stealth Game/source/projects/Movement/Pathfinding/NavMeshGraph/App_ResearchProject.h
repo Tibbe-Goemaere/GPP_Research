@@ -10,11 +10,14 @@
 #include "framework\EliteAI\EliteNavigation\Algorithms\EPathSmoothing.h"
 
 class NavigationColliderElement;
+class BaseAgent;
 class SteeringAgent;
 class SteeringNpcAgent;
 class Seek;
 class Arrive;
 class Patrol;
+class InterestRecord;
+class InterestSource;
 
 namespace Elite
 {
@@ -23,12 +26,12 @@ namespace Elite
 //-----------------------------------------------------------------
 // Application
 //-----------------------------------------------------------------
-class App_NavMeshGraph final : public IApp
+class App_ResearchProject final : public IApp
 {
 public:
 	//Constructor & Destructor
-	App_NavMeshGraph() = default;
-	virtual ~App_NavMeshGraph();
+	App_ResearchProject() = default;
+	virtual ~App_ResearchProject();
 
 	//App Functions
 	void Start() override;
@@ -39,6 +42,7 @@ private:
 	//Datamembers
 	// --Agents--
 	SteeringAgent* m_pAgent = nullptr;
+	BaseAgent* m_pDeadBody = nullptr;
 	Seek* m_pSeekBehavior = nullptr;
 	Arrive* m_pArriveBehavior = nullptr;
 	Patrol* m_pPatrolBehavior = nullptr;
@@ -68,9 +72,18 @@ private:
 	static bool sDrawNonOptimisedPath;
 
 	void UpdateImGui();
+
+	// --InterestSources-- //
+	enum class Interests{DeadBody};
+	Interests m_CurrentInterest{};
+	void UpdateInterestsUI();
+	void PlaceInterestSource(const Elite::Vector2& pos);
+	InterestRecord* m_pInterestRecord{};
+
 private:
 	//C++ make the class non-copyable
-	App_NavMeshGraph(const App_NavMeshGraph&) = delete;
-	App_NavMeshGraph& operator=(const App_NavMeshGraph&) = delete;
+	App_ResearchProject(const App_ResearchProject&) = delete;
+	App_ResearchProject& operator=(const App_ResearchProject&) = delete;
+
 };
 #endif

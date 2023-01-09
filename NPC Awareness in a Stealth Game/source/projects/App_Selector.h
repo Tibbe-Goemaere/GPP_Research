@@ -1,11 +1,11 @@
 #pragma once
 //Defining which app to use 
-#define ActiveApp_NavMeshGraph
+#define ActiveApp_ResearchProject
 
 //---------- Registered Applications -----------
-#ifdef ActiveApp_NavMeshGraph
-#include "projects/Movement/Pathfinding/NavMeshGraph/App_NavMeshGraph.h"
-typedef App_NavMeshGraph CurrentApp;
+#ifdef ActiveApp_ResearchProject
+#include "projects/Movement/Pathfinding/NavMeshGraph/App_ResearchProject.h"
+typedef App_ResearchProject CurrentApp;
 #endif
 
 class App_Selector {

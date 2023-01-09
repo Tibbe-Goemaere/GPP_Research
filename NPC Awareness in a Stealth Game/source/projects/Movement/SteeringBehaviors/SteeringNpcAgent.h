@@ -1,6 +1,6 @@
 #pragma once
 #include "SteeringAgent.h"
-#include "projects/Shared/VisionCone.h"
+#include "projects/Shared/Interests/VisionCone.h"
 
 class SteeringNpcAgent : public SteeringAgent
 {
@@ -8,7 +8,7 @@ public:
 	//--- Constructor & Destructor ---
 	SteeringNpcAgent() = default;
 	SteeringNpcAgent(float radius) : SteeringAgent(radius) {};
-	virtual ~SteeringNpcAgent() = default;
+	virtual ~SteeringNpcAgent();
 
 	//--- Agent Functions ---
 	void Update(float dt) override;

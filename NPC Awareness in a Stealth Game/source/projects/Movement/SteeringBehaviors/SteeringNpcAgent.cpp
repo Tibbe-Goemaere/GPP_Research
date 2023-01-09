@@ -1,6 +1,12 @@
 #include "stdafx.h"
 #include "SteeringNpcAgent.h"
 
+SteeringNpcAgent::~SteeringNpcAgent()
+{
+	delete m_pVisionCone;
+	m_pVisionCone = nullptr;
+}
+
 void SteeringNpcAgent::Update(float dt)
 {
 	SteeringAgent::Update(dt);

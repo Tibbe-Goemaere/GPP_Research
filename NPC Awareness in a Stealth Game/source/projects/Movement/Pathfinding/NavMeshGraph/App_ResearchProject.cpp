@@ -3,7 +3,7 @@
 using namespace Elite;
 
 //Includes
-#include "App_NavMeshGraph.h"
+#include "App_ResearchProject.h"
 #include "projects/Shared/NavigationColliderElement.h"
 
 #include "projects/Movement/SteeringBehaviors/SteeringNpcAgent.h"
@@ -11,15 +11,18 @@ using namespace Elite;
 
 #include "framework\EliteAI\EliteNavigation\Algorithms\ENavGraphPathfinding.h"
 
+#include "projects/Shared/Interests/InterestRecord.h"
+#include "projects/Shared/Interests/InterestSource.h"
+
 //Statics
-bool App_NavMeshGraph::sShowPolygon = true;
-bool App_NavMeshGraph::sShowGraph = false;
-bool App_NavMeshGraph::sDrawPortals = false;
-bool App_NavMeshGraph::sDrawFinalPath = true;
-bool App_NavMeshGraph::sDrawNonOptimisedPath = false;
+bool App_ResearchProject::sShowPolygon = true;
+bool App_ResearchProject::sShowGraph = false;
+bool App_ResearchProject::sDrawPortals = false;
+bool App_ResearchProject::sDrawFinalPath = true;
+bool App_ResearchProject::sDrawNonOptimisedPath = false;
 
 //Destructor
-App_NavMeshGraph::~App_NavMeshGraph()
+App_ResearchProject::~App_ResearchProject()
 {
 	for (auto pNC : m_vNavigationColliders)
 		SAFE_DELETE(pNC);
@@ -29,15 +32,19 @@ App_NavMeshGraph::~App_NavMeshGraph()
 	SAFE_DELETE(m_pSeekBehavior);
 	SAFE_DELETE(m_pArriveBehavior);
 	SAFE_DELETE(m_pAgent);
+	SAFE_DELETE(m_pPatrolBehavior);
 	for (auto npc : m_pNpcAgents)
 	{
 		SAFE_DELETE(npc);
 	}
 	m_pNpcAgents.clear();
+	SAFE_DELETE(m_pInterestRecord);
+	SAFE_DELETE(m_pDeadBody);
+	
 }
 
 //Functions
-void App_NavMeshGraph::Start()
+void App_ResearchProject::Start()
 {
 	//Initialization of your application. 
 	//----------- CAMERA ------------
@@ -57,17 +64,11 @@ void App_NavMeshGraph::Start()
 
 	m_pNavGraph = new Elite::NavGraph(Elite::Polygon(baseBox), m_AgentRadius);
 
-	//----------- AGENT ------------
-	m_pSeekBehavior = new Seek();
-	m_pArriveBehavior = new Arrive();
-	//m_pArriveBehavior->SetSlowRadius(3.0f);
-	//m_pArriveBehavior->SetTargetRadius(1.0f);
-	m_Target = TargetData(Elite::ZeroVector2);
-	m_pAgent = new SteeringAgent();
-	m_pAgent->SetSteeringBehavior(m_pSeekBehavior);
-	m_pAgent->SetMaxLinearSpeed(m_AgentSpeed);
-	m_pAgent->SetAutoOrient(true);
-	m_pAgent->SetMass(0.1f);
+	//----------- DeadBody ------------
+	m_pDeadBody = new BaseAgent();
+	m_pDeadBody->SetBodyColor(Color{0,0,0});
+	//----------- InterestRecord ------------
+	m_pInterestRecord = new InterestRecord();
 	//----------- NPC's ------------
 	m_pPatrolBehavior = new Patrol();
 	SteeringNpcAgent* agent = new SteeringNpcAgent();
@@ -81,42 +82,18 @@ void App_NavMeshGraph::Start()
 	m_pNpcAgents.push_back(agent);
 }
 
-void App_NavMeshGraph::Update(float deltaTime)
+void App_ResearchProject::Update(float deltaTime)
 {
-	//Update target/path based on input
-	if (INPUTMANAGER->IsMouseButtonUp(InputMouseButton::eMiddle))
+	//Add interest source at mouse pos
+	if (INPUTMANAGER->IsMouseButtonUp(InputMouseButton::eLeft))
 	{
 		auto mouseData = INPUTMANAGER->GetMouseData(Elite::InputType::eMouseButton, Elite::InputMouseButton::eMiddle);
 		Elite::Vector2 mouseTarget = DEBUGRENDERER2D->GetActiveCamera()->ConvertScreenToWorld(
 			Elite::Vector2((float)mouseData.X, (float)mouseData.Y));
-		m_vPath = NavMeshPathfinding::FindPath(m_pAgent->GetPosition(), mouseTarget, m_pNavGraph, m_DebugNodePositions, m_Portals);
-	}
-
-	//Check if a path exist and move to the following point
-	if (m_vPath.size() > 0)
-	{
-		if (m_vPath.size() == 1)
-		{
-			//We have reached the last node
-			m_pAgent->SetSteeringBehavior(m_pArriveBehavior);
-			m_pArriveBehavior->SetTarget(m_vPath[0]);
-		}
-		else
-		{
-			//Move to the next node
-			m_pAgent->SetSteeringBehavior(m_pSeekBehavior);
-			m_pSeekBehavior->SetTarget(m_vPath[0]);
-		}
-
-		if (Elite::DistanceSquared(m_pAgent->GetPosition(), m_vPath[0]) < m_AgentRadius * m_AgentRadius)
-		{
-			//If we reached the next point of the path. Remove it 
-			m_vPath.erase(std::remove(m_vPath.begin(), m_vPath.end(), m_vPath[0]));
-		}
+		PlaceInterestSource(mouseTarget);
 	}
 	
 	UpdateImGui();
-	m_pAgent->Update(deltaTime);
 
 	for (auto npc : m_pNpcAgents)
 	{
@@ -124,7 +101,7 @@ void App_NavMeshGraph::Update(float deltaTime)
 	}
 }
 
-void App_NavMeshGraph::Render(float deltaTime) const
+void App_ResearchProject::Render(float deltaTime) const
 {
 	if (sShowGraph)
 	{
@@ -185,7 +162,7 @@ void App_NavMeshGraph::Render(float deltaTime) const
 	//std::cout << m_pAgent->GetRotation() << "\n";
 }
 
-void App_NavMeshGraph::UpdateImGui()
+void App_ResearchProject::UpdateImGui()
 {
 	//------- UI --------
 #ifdef PLATFORM_WINDOWS
@@ -235,11 +212,50 @@ void App_NavMeshGraph::UpdateImGui()
 		{
 			m_pAgent->SetMaxLinearSpeed(m_AgentSpeed);
 		}
-		
+
+		ImGui::Spacing();
+		ImGui::Spacing();
+		UpdateInterestsUI();
 		//End
 		ImGui::PopAllowKeyboardFocus();
 		ImGui::End();
 	}
 #pragma endregion
 #endif
+}
+
+void App_ResearchProject::UpdateInterestsUI()
+{
+	//------- UI --------
+#ifdef PLATFORM_WINDOWS
+#pragma region UI
+	{
+		switch (m_CurrentInterest)
+		{
+		case App_ResearchProject::Interests::DeadBody:
+			ImGui::Text("DeadBody");
+			break;
+		default:
+			break;
+		}
+		
+		
+	}
+#pragma endregion
+#endif
+}
+
+void App_ResearchProject::PlaceInterestSource(const Vector2& pos)
+{
+	InterestSource* pInterest{};
+	switch (m_CurrentInterest)
+	{
+	case App_ResearchProject::Interests::DeadBody:
+		pInterest = new InterestSource(InterestSource::Senses::Sight,7,m_pDeadBody->GetRadius(),pos,true);
+		m_pInterestRecord->AddInterestSource(pInterest);
+		break;
+	default:
+		break;
+	}
+	SAFE_DELETE(pInterest);
 }
