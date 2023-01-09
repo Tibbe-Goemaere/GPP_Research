@@ -50,12 +50,16 @@ SteeringOutput Arrive::CalculateSteering(float deltaT, SteeringAgent* pAgent)
 {
 	SteeringOutput steering = {};
 
-	const float slowRadius{ 15.f };
+	const float slowRadius{ 5.f };
 
 	steering.LinearVelocity = m_Target.Position - pAgent->GetPosition();
 	const float distance{ steering.LinearVelocity.Magnitude() };
 	steering.LinearVelocity.Normalize();
-	if (distance < slowRadius)
+	if (distance < m_ArriveDistance)
+	{
+		steering.LinearVelocity = {0,0};
+	}
+	else if (distance < m_ArriveDistance + slowRadius)
 	{
 		steering.LinearVelocity *= pAgent->GetMaxLinearSpeed() * (distance / slowRadius);
 	}

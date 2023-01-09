@@ -9,9 +9,20 @@ InterestRecord::InterestRecord()
 
 InterestRecord::~InterestRecord()
 {
+	for (auto interestSource : m_pInterests)
+	{
+		SAFE_DELETE(interestSource);
+	}
 }
 
-void InterestRecord::AddInterestSource(InterestSource* pInterest)
+void InterestRecord::AddInterestSource(const InterestSource& interestSource)
 {
-	m_pInterests.push_back(pInterest);
+	InterestSource* pInterestSource{};
+	pInterestSource = new InterestSource(interestSource);
+	m_pInterests.push_back(pInterestSource);
+}
+
+std::list<InterestSource*> InterestRecord::GetInterestSources() const
+{
+	return m_pInterests;
 }

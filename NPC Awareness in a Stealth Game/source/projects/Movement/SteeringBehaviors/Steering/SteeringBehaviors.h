@@ -76,6 +76,10 @@ public:
 
 	//Arrive Behaviour
 	SteeringOutput CalculateSteering(float deltaT, SteeringAgent* pAgent) override;
+	void SetArriveDistance(const float distance) { m_ArriveDistance = distance; };
+
+private:
+	float m_ArriveDistance{};
 };
 
 ///////////////////////////////////////

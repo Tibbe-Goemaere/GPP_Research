@@ -4,7 +4,7 @@
 
 //---------- Registered Applications -----------
 #ifdef ActiveApp_ResearchProject
-#include "projects/Movement/Pathfinding/NavMeshGraph/App_ResearchProject.h"
+#include "App_ResearchProject.h"
 typedef App_ResearchProject CurrentApp;
 #endif
 

@@ -17,9 +17,6 @@ using namespace Elite;
 //Statics
 bool App_ResearchProject::sShowPolygon = true;
 bool App_ResearchProject::sShowGraph = false;
-bool App_ResearchProject::sDrawPortals = false;
-bool App_ResearchProject::sDrawFinalPath = true;
-bool App_ResearchProject::sDrawNonOptimisedPath = false;
 
 //Destructor
 App_ResearchProject::~App_ResearchProject()
@@ -29,17 +26,20 @@ App_ResearchProject::~App_ResearchProject()
 	m_vNavigationColliders.clear();
 
 	SAFE_DELETE(m_pNavGraph);
+	SAFE_DELETE(m_pPatrolBehavior);
 	SAFE_DELETE(m_pSeekBehavior);
 	SAFE_DELETE(m_pArriveBehavior);
-	SAFE_DELETE(m_pAgent);
-	SAFE_DELETE(m_pPatrolBehavior);
 	for (auto npc : m_pNpcAgents)
 	{
 		SAFE_DELETE(npc);
 	}
 	m_pNpcAgents.clear();
+	for (auto deadBody : m_pDeadBodies)
+	{
+		SAFE_DELETE(deadBody);
+	}
+	m_pDeadBodies.clear();
 	SAFE_DELETE(m_pInterestRecord);
-	SAFE_DELETE(m_pDeadBody);
 	
 }
 
@@ -65,12 +65,14 @@ void App_ResearchProject::Start()
 	m_pNavGraph = new Elite::NavGraph(Elite::Polygon(baseBox), m_AgentRadius);
 
 	//----------- DeadBody ------------
-	m_pDeadBody = new BaseAgent();
-	m_pDeadBody->SetBodyColor(Color{0,0,0});
+	m_pDeadBodies = std::vector<BaseAgent*>{};
 	//----------- InterestRecord ------------
 	m_pInterestRecord = new InterestRecord();
 	//----------- NPC's ------------
 	m_pPatrolBehavior = new Patrol();
+	m_pSeekBehavior = new Seek();
+	m_pArriveBehavior = new Arrive();
+
 	SteeringNpcAgent* agent = new SteeringNpcAgent();
 	agent->SetPosition(Vector2{20,20});
 	agent->SetVisionCone(VisionCone{ agent->GetRotation() ,agent->GetPosition()});
@@ -87,7 +89,7 @@ void App_ResearchProject::Update(float deltaTime)
 	//Add interest source at mouse pos
 	if (INPUTMANAGER->IsMouseButtonUp(InputMouseButton::eLeft))
 	{
-		auto mouseData = INPUTMANAGER->GetMouseData(Elite::InputType::eMouseButton, Elite::InputMouseButton::eMiddle);
+		auto mouseData = INPUTMANAGER->GetMouseData(Elite::InputType::eMouseButton, Elite::InputMouseButton::eLeft);
 		Elite::Vector2 mouseTarget = DEBUGRENDERER2D->GetActiveCamera()->ConvertScreenToWorld(
 			Elite::Vector2((float)mouseData.X, (float)mouseData.Y));
 		PlaceInterestSource(mouseTarget);
@@ -98,6 +100,20 @@ void App_ResearchProject::Update(float deltaTime)
 	for (auto npc : m_pNpcAgents)
 	{
 		npc->Update(deltaTime);
+		for (auto interestSource : m_pInterestRecord->GetInterestSources())
+		{
+			if (npc->CheckInterestSources(*interestSource))
+			{
+				m_pArriveBehavior->SetTarget(interestSource->GetSource().position);
+				m_pArriveBehavior->SetArriveDistance(5.f);
+				npc->SetSteeringBehavior(m_pArriveBehavior);
+			}
+		}
+	}
+
+	for (auto deadBody : m_pDeadBodies)
+	{
+		deadBody->Update(deltaTime);
 	}
 }
 
@@ -116,50 +132,15 @@ void App_ResearchProject::Render(float deltaTime) const
 			Color(0.0f, 0.5f, 0.1f, 0.05f), 0.4f);
 	}
 
-	if (sDrawPortals)
-	{
-		for (const auto &portal : m_Portals)
-		{
-			DEBUGRENDERER2D->DrawSegment(portal.Line.p1, portal.Line.p2, Color(1.f, .5f, 0.f), -0.1f);
-			//Draw just p1 p2
-			std::string p1{ "p1" };
-			std::string p2{ "p2" };
-			//Add the positions to the debugdrawing
-			//p1 +=" x:" + std::to_string(portal.Line.p1.x) + ", y: " + std::to_string(portal.Line.p1.y);
-			//p2 +=" x:" + std::to_string(portal.Line.p2.x) + ", y: " + std::to_string(portal.Line.p2.y);
-			DEBUGRENDERER2D->DrawString(portal.Line.p1, p1.c_str(), Color(1.f, .5f, 0.f), -0.1f);
-			DEBUGRENDERER2D->DrawString(portal.Line.p2, p2.c_str(), Color(1.f, .5f, 0.f), -0.1f);
-
-		}
-	}
-
-	if (sDrawNonOptimisedPath)
-	{
-		for (auto pathNode : m_DebugNodePositions)
-			DEBUGRENDERER2D->DrawCircle(pathNode, 2.0f, Color(0.f, 0.f, 1.f), -0.45f);
-	}
-
-	if (sDrawFinalPath && m_vPath.size() > 0)
-	{
-
-		for (auto pathPoint : m_vPath)
-			DEBUGRENDERER2D->DrawCircle(pathPoint, 2.0f, Color(1.f, 0.f, 0.f), -0.2f);
-
-		DEBUGRENDERER2D->DrawSegment(m_pAgent->GetPosition(), m_vPath[0], Color(1.f, 0.0f, 0.0f), -0.2f);
-		for (size_t i = 0; i < m_vPath.size() - 1; i++)
-		{
-			float g = float(i) / m_vPath.size();
-			DEBUGRENDERER2D->DrawSegment(m_vPath[i], m_vPath[i+1], Color(1.f, g, g), -0.2f);
-		}
-			
-	}
-
 	for (auto npc : m_pNpcAgents)
 	{
 		npc->Render(deltaTime);
 	}
 
-	//std::cout << m_pAgent->GetRotation() << "\n";
+	for (auto deadBody : m_pDeadBodies)
+	{
+		deadBody->Render(deltaTime);
+	}
 }
 
 void App_ResearchProject::UpdateImGui()
@@ -202,15 +183,15 @@ void App_ResearchProject::UpdateImGui()
 
 		ImGui::Checkbox("Show Polygon", &sShowPolygon);
 		ImGui::Checkbox("Show Graph", &sShowGraph);
-		ImGui::Checkbox("Show Portals", &sDrawPortals);
-		ImGui::Checkbox("Show Path Nodes", &sDrawNonOptimisedPath);
-		ImGui::Checkbox("Show Final Path", &sDrawFinalPath);
 		ImGui::Spacing();
 		ImGui::Spacing();
 
-		if (ImGui::SliderFloat("AgentSpeed", &m_AgentSpeed, 0.0f, 22.0f))
+		if (ImGui::SliderFloat("NpcSpeed", &m_NpcSpeed, 0.0f, 22.0f))
 		{
-			m_pAgent->SetMaxLinearSpeed(m_AgentSpeed);
+			for (auto npc : m_pNpcAgents)
+			{
+				npc->SetMaxLinearSpeed(m_NpcSpeed);
+			}
 		}
 
 		ImGui::Spacing();
@@ -247,15 +228,20 @@ void App_ResearchProject::UpdateInterestsUI()
 
 void App_ResearchProject::PlaceInterestSource(const Vector2& pos)
 {
-	InterestSource* pInterest{};
+	BaseAgent* pDeadBody{};
+
 	switch (m_CurrentInterest)
 	{
 	case App_ResearchProject::Interests::DeadBody:
-		pInterest = new InterestSource(InterestSource::Senses::Sight,7,m_pDeadBody->GetRadius(),pos,true);
-		m_pInterestRecord->AddInterestSource(pInterest);
+		m_pInterestRecord->AddInterestSource(InterestSource(InterestSource::Senses::Sight, 7, m_AgentRadius, pos, true));
+
+		//Add the dead body in
+		pDeadBody = new BaseAgent(m_AgentRadius);
+		pDeadBody->SetBodyColor(Color{ 0,0,0 });
+		pDeadBody->SetPosition(pos);
+		m_pDeadBodies.push_back(pDeadBody);
 		break;
 	default:
 		break;
 	}
-	SAFE_DELETE(pInterest);
 }

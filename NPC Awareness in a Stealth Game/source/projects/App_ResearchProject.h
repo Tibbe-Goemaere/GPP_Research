@@ -41,17 +41,15 @@ public:
 private:
 	//Datamembers
 	// --Agents--
-	SteeringAgent* m_pAgent = nullptr;
-	BaseAgent* m_pDeadBody = nullptr;
+	std::vector<BaseAgent*> m_pDeadBodies;
+	Patrol* m_pPatrolBehavior = nullptr;
 	Seek* m_pSeekBehavior = nullptr;
 	Arrive* m_pArriveBehavior = nullptr;
-	Patrol* m_pPatrolBehavior = nullptr;
 	TargetData m_Target = {};
 	float m_AgentRadius = 1.0f;
-	float m_AgentSpeed = 16.0f;
 
 	std::vector<SteeringNpcAgent*> m_pNpcAgents{};
-	float m_NpcSpeed = 10.0f;
+	float m_NpcSpeed = 8.0f;
 	// --Level--
 	std::vector<NavigationColliderElement*> m_vNavigationColliders = {};
 
@@ -67,9 +65,6 @@ private:
 	std::vector<Elite::Vector2> m_DebugNodePositions;
 	static bool sShowPolygon;
 	static bool sShowGraph;
-	static bool sDrawPortals;
-	static bool sDrawFinalPath;
-	static bool sDrawNonOptimisedPath;
 
 	void UpdateImGui();
 

@@ -8,12 +8,9 @@ public:
 	InterestRecord();
 	~InterestRecord();
 
-	void AddInterestSource(InterestSource* pInterest);
+	void AddInterestSource(const InterestSource& interestSource);
+	std::list<InterestSource*> GetInterestSources() const;
 private:
-	//C++ make the class non-copyable
-	InterestRecord(const InterestRecord&) = delete;
-	InterestRecord& operator=(const InterestRecord&) = delete;
-
 	//Member Variables
 	std::list<InterestSource*> m_pInterests{};
 };
