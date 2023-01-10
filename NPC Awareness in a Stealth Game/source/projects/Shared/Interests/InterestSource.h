@@ -6,18 +6,22 @@ public:
 
 	InterestSource(const Senses& sense, const int priority,const float radius, const Elite::Vector2 pos, const bool livesForever, const float lifeTime = 0.f);
 	~InterestSource();
+	//C++ make the class copyable
+	InterestSource(const InterestSource& other);
+	InterestSource& operator=(const InterestSource& other);
 
 	void Update(const float dt);
 
 	Elite::EPhysicsCircleShape GetSource() const;
+	int GetPriority() const;
 
 private:
 	//--- Datamembers ---
 	Senses m_Sense{};
-	const int m_Priority{};
-	const float m_Radius{};
-	const Elite::Vector2 m_Position{};
-	const bool m_LivesForever{};
+	int m_Priority{};
+	float m_Radius{};
+	Elite::Vector2 m_Position{};
+	bool m_LivesForever{};
 	float m_LifeTime{};
 	
 };

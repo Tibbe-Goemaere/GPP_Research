@@ -6,6 +6,7 @@ SteeringNpcAgent::~SteeringNpcAgent()
 	SAFE_DELETE(m_pVisionCone);
 	//SAFE_DELETE(m_pPatrolBehavior);
 	//SAFE_DELETE(m_pInvestigateBehavior);
+	//SAFE_DELETE(m_pNextInterestSource);
 }
 
 void SteeringNpcAgent::Update(float dt)
@@ -34,15 +35,37 @@ bool SteeringNpcAgent::IsInVision(Elite::Vector2 pos)
 	return m_pVisionCone->IsOverlapping(pos);
 }
 
-bool SteeringNpcAgent::CheckInterestSources(const InterestSource& interestSource)
+bool SteeringNpcAgent::CheckInterestSources(const std::list<InterestSource>& interestSources)
 {
-	if (IsInVision(interestSource.GetSource().position))
+	std::vector<InterestSource> validInterestSources{};
+	for (auto interestSource : interestSources)
 	{
-		SetSteeringBehavior(m_pInvestigateBehavior);
-		m_IsInvestegating = true;
-		return true;
+		if (IsInVision(interestSource.GetSource().position))
+		{
+			validInterestSources.push_back(interestSource);
+		}
 	}
-	return false;
+
+	if (validInterestSources.size() == 0)
+	{
+		return false;
+	}
+
+	InterestSource nextInterestSource{ validInterestSources[0]};
+
+	for (auto interestSource : validInterestSources)
+	{
+		if (IsInVision(interestSource.GetSource().position))
+		{
+			if (interestSource.GetPriority() < nextInterestSource.GetPriority())
+			{
+				nextInterestSource = interestSource;
+			}
+		}
+	}
+	m_nextInterestSource = nextInterestSource;
+	m_IsInvestegating = true;
+	return true;
 }
 
 bool SteeringNpcAgent::IsInvestegating()

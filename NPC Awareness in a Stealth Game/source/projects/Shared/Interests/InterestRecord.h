@@ -9,9 +9,9 @@ public:
 	~InterestRecord();
 
 	void AddInterestSource(const InterestSource& interestSource);
-	std::list<InterestSource*> GetInterestSources() const;
+	std::list<InterestSource> GetInterestSources() const;
 private:
 	//Member Variables
-	std::list<InterestSource*> m_pInterests{};
+	std::list<InterestSource> m_Interests{};
 };
 

@@ -41,7 +41,6 @@ public:
 private:
 	//Datamembers
 	// --Agents--
-	std::vector<BaseAgent*> m_pDeadBodies;
 	Patrol* m_pPatrolBehavior = nullptr;
 	Seek* m_pSeekBehavior = nullptr;
 	Arrive* m_pArriveBehavior = nullptr;
@@ -69,12 +68,14 @@ private:
 	void UpdateImGui();
 
 	// --InterestSources-- //
-	enum class Interests{DeadBody};
+	enum class Interests{DeadBody,QuitSound};
 	Interests m_CurrentInterest{};
 	void UpdateInterestsUI();
 	void PlaceInterestSource(const Elite::Vector2& pos);
 	InterestRecord* m_pInterestRecord{};
-
+	// --Visualisation-- //
+	std::vector<BaseAgent*> m_pDeadBodies;
+	std::vector<Elite::EPhysicsCircleShape> m_pSounds;
 private:
 	//C++ make the class non-copyable
 	App_ResearchProject(const App_ResearchProject&) = delete;

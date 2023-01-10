@@ -3,26 +3,21 @@
 #include "InterestSource.h"
 
 InterestRecord::InterestRecord()
-	:m_pInterests{}
+	:m_Interests{}
 {
 }
 
 InterestRecord::~InterestRecord()
 {
-	for (auto interestSource : m_pInterests)
-	{
-		SAFE_DELETE(interestSource);
-	}
+	
 }
 
 void InterestRecord::AddInterestSource(const InterestSource& interestSource)
 {
-	InterestSource* pInterestSource{};
-	pInterestSource = new InterestSource(interestSource);
-	m_pInterests.push_back(pInterestSource);
+	m_Interests.push_back(interestSource);
 }
 
-std::list<InterestSource*> InterestRecord::GetInterestSources() const
+std::list<InterestSource> InterestRecord::GetInterestSources() const
 {
-	return m_pInterests;
+	return m_Interests;
 }

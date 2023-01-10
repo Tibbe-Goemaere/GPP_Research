@@ -91,7 +91,7 @@ void App_ResearchProject::Update(float deltaTime)
 	{
 		auto mouseData = INPUTMANAGER->GetMouseData(Elite::InputType::eMouseButton, Elite::InputMouseButton::eLeft);
 		Elite::Vector2 mouseTarget = DEBUGRENDERER2D->GetActiveCamera()->ConvertScreenToWorld(
-			Elite::Vector2((float)mouseData.X, (float)mouseData.Y));
+		Elite::Vector2((float)mouseData.X, (float)mouseData.Y));
 		PlaceInterestSource(mouseTarget);
 	}
 	
@@ -100,14 +100,11 @@ void App_ResearchProject::Update(float deltaTime)
 	for (auto npc : m_pNpcAgents)
 	{
 		npc->Update(deltaTime);
-		for (auto interestSource : m_pInterestRecord->GetInterestSources())
+		if (npc->CheckInterestSources(m_pInterestRecord->GetInterestSources()))
 		{
-			if (npc->CheckInterestSources(*interestSource))
-			{
-				m_pArriveBehavior->SetTarget(interestSource->GetSource().position);
-				m_pArriveBehavior->SetArriveDistance(5.f);
-				npc->SetSteeringBehavior(m_pArriveBehavior);
-			}
+			m_pArriveBehavior->SetTarget(npc->GetNextInterestSource().GetSource().position);
+			m_pArriveBehavior->SetArriveDistance(5.f);
+			npc->SetSteeringBehavior(m_pArriveBehavior);
 		}
 	}
 
@@ -140,6 +137,10 @@ void App_ResearchProject::Render(float deltaTime) const
 	for (auto deadBody : m_pDeadBodies)
 	{
 		deadBody->Render(deltaTime);
+	}
+	for (auto sounds : m_pSounds)
+	{
+		DEBUGRENDERER2D->DrawCircle(sounds.position, sounds.radius, Color{1,0,0},0);
 	}
 }
 
@@ -216,6 +217,9 @@ void App_ResearchProject::UpdateInterestsUI()
 		case App_ResearchProject::Interests::DeadBody:
 			ImGui::Text("DeadBody");
 			break;
+		case App_ResearchProject::Interests::QuitSound:
+			ImGui::Text("QuitSound");
+			break;
 		default:
 			break;
 		}
@@ -229,6 +233,7 @@ void App_ResearchProject::UpdateInterestsUI()
 void App_ResearchProject::PlaceInterestSource(const Vector2& pos)
 {
 	BaseAgent* pDeadBody{};
+	const float smallRadius{ 10.f };
 
 	switch (m_CurrentInterest)
 	{
@@ -240,6 +245,12 @@ void App_ResearchProject::PlaceInterestSource(const Vector2& pos)
 		pDeadBody->SetBodyColor(Color{ 0,0,0 });
 		pDeadBody->SetPosition(pos);
 		m_pDeadBodies.push_back(pDeadBody);
+		break;
+	case App_ResearchProject::Interests::QuitSound:
+		
+		m_pInterestRecord->AddInterestSource(InterestSource(InterestSource::Senses::Sound, 4, smallRadius, pos,false,10.f));
+		//Add visualisation of the sound in
+		m_pSounds.push_back(Elite::EPhysicsCircleShape{pos,smallRadius,});
 		break;
 	default:
 		break;

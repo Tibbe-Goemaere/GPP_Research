@@ -3,7 +3,7 @@
 class VisionCone
 {
 public:
-	VisionCone(const float rotation, const Elite::Vector2& origin, const float fovAngle = 60.f, const float distance = 10.f);
+	VisionCone(const float rotation, const Elite::Vector2& origin, const float fovAngle = 60.f, const float distance = 20.f);
 	~VisionCone();
 
 	void UpdatePos(const float rotation, const Elite::Vector2& origin);

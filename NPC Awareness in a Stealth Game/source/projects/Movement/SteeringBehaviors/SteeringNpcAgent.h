@@ -19,11 +19,11 @@ public:
 	void SetVisionCone(const VisionCone& visionCone);
 	bool IsInVision(Elite::Vector2 pos);
 
-	void SetInterestRecord(const InterestRecord& interestRecord);
-	bool CheckInterestSources(const InterestSource& interestSource);
+	bool CheckInterestSources(const std::list<InterestSource>& interestSources);
 	
 	bool IsInvestegating();
 
+	InterestSource GetNextInterestSource() { return m_nextInterestSource; };
 protected:
 	//--- Datamembers ---
 	VisionCone* m_pVisionCone{};
@@ -31,6 +31,8 @@ protected:
 
 	ISteeringBehavior* m_pPatrolBehavior = nullptr;
 	ISteeringBehavior* m_pInvestigateBehavior = nullptr;
+
+	InterestSource m_nextInterestSource = InterestSource(InterestSource::Senses::Sight, 0, 0, { 0,0 }, false);
 	//--- Helper Functions ---
 	bool HasInterest(InterestSource& interestSource);
 };
