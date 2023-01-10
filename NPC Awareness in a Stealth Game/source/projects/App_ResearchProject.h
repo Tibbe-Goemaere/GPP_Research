@@ -76,10 +76,14 @@ private:
 	// --Visualisation-- //
 	std::vector<BaseAgent*> m_pDeadBodies;
 	std::vector<Elite::EPhysicsCircleShape> m_pSounds;
+	// --Helper Functions-- //
+	void SwitchCurrentInterest();
+
 private:
 	//C++ make the class non-copyable
 	App_ResearchProject(const App_ResearchProject&) = delete;
 	App_ResearchProject& operator=(const App_ResearchProject&) = delete;
+
 
 };
 #endif

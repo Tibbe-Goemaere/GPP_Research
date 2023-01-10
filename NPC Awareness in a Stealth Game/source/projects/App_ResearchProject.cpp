@@ -95,6 +95,11 @@ void App_ResearchProject::Update(float deltaTime)
 		PlaceInterestSource(mouseTarget);
 	}
 	
+	//Switch between interest sources
+	if (INPUTMANAGER->IsMouseButtonUp(InputMouseButton::eRight))
+	{
+		SwitchCurrentInterest();
+	}
 	UpdateImGui();
 
 	for (auto npc : m_pNpcAgents)
@@ -138,7 +143,7 @@ void App_ResearchProject::Render(float deltaTime) const
 	{
 		deadBody->Render(deltaTime);
 	}
-	for (auto sounds : m_pSounds)
+	for (const EPhysicsCircleShape& sounds : m_pSounds)
 	{
 		DEBUGRENDERER2D->DrawCircle(sounds.position, sounds.radius, Color{1,0,0},0);
 	}
@@ -251,6 +256,21 @@ void App_ResearchProject::PlaceInterestSource(const Vector2& pos)
 		m_pInterestRecord->AddInterestSource(InterestSource(InterestSource::Senses::Sound, 4, smallRadius, pos,false,10.f));
 		//Add visualisation of the sound in
 		m_pSounds.push_back(Elite::EPhysicsCircleShape{pos,smallRadius,});
+		break;
+	default:
+		break;
+	}
+}
+
+void App_ResearchProject::SwitchCurrentInterest()
+{
+	switch (m_CurrentInterest)
+	{
+	case App_ResearchProject::Interests::DeadBody:
+		m_CurrentInterest = Interests::QuitSound;
+		break;
+	case App_ResearchProject::Interests::QuitSound:
+		m_CurrentInterest = Interests::DeadBody;
 		break;
 	default:
 		break;
