@@ -35,15 +35,33 @@ bool SteeringNpcAgent::IsInVision(Elite::Vector2 pos)
 	return m_pVisionCone->IsOverlapping(pos);
 }
 
+bool SteeringNpcAgent::IsInRadius(Elite::Vector2 pos, float radius)
+{
+	return GetPosition().Distance(pos) <= radius + GetRadius();
+}
+
 bool SteeringNpcAgent::CheckInterestSources(const std::list<InterestSource>& interestSources)
 {
 	std::vector<InterestSource> validInterestSources{};
 	for (auto interestSource : interestSources)
 	{
-		if (IsInVision(interestSource.GetSource().position))
+		if (interestSource.GetType() == InterestSource::Senses::Sight)
 		{
-			validInterestSources.push_back(interestSource);
+			if (IsInVision(interestSource.GetSource().position))
+			{
+				validInterestSources.push_back(interestSource);
+			}
 		}
+
+		if (interestSource.GetType() == InterestSource::Senses::Sound)
+		{
+			if (IsInRadius(interestSource.GetSource().position, interestSource.GetRadius()))
+			{
+				validInterestSources.push_back(interestSource);
+			}
+			
+		}
+		
 	}
 
 	if (validInterestSources.size() == 0)
@@ -51,19 +69,42 @@ bool SteeringNpcAgent::CheckInterestSources(const std::list<InterestSource>& int
 		return false;
 	}
 
-	InterestSource nextInterestSource{ validInterestSources[0]};
+	InterestSource nextInterestSource{ validInterestSources[0] };
+	if (m_IsInvestegating)
+	{
+		nextInterestSource = m_NextInterestSource;
+	}
+
 
 	for (auto interestSource : validInterestSources)
 	{
-		if (IsInVision(interestSource.GetSource().position))
+		if (interestSource.GetType() == InterestSource::Senses::Sight)
 		{
-			if (interestSource.GetPriority() < nextInterestSource.GetPriority())
+			if (IsInVision(interestSource.GetSource().position))
 			{
-				nextInterestSource = interestSource;
+				if (interestSource.GetPriority() < nextInterestSource.GetPriority())
+				{
+					nextInterestSource = interestSource;
+				}
 			}
 		}
+		//std::cout << "check other\n";
+		if (interestSource.GetType() == InterestSource::Senses::Sound)
+		{
+			//std::cout << "check it\n";
+			if (IsInRadius(interestSource.GetSource().position,interestSource.GetRadius()))
+			{
+				//std::cout << "isInRadius\n";
+				if (interestSource.GetPriority() < nextInterestSource.GetPriority())
+				{
+					//std::cout << "nextSource\n";
+					nextInterestSource = interestSource;
+				}
+			}
+		}
+		
 	}
-	m_nextInterestSource = nextInterestSource;
+	m_NextInterestSource = nextInterestSource;
 	m_IsInvestegating = true;
 	return true;
 }

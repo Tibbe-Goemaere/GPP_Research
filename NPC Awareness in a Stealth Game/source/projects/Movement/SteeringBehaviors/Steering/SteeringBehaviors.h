@@ -165,6 +165,20 @@ public:
 private:
 	bool m_IsGoingToFirstTarget{ true };
 };
+
+///////////////////////////////////////
+//TURN
+//****
+
+class Turn : public ISteeringBehavior
+{
+public:
+	Turn() = default;
+	virtual ~Turn() = default;
+
+	//Turn Behaviour
+	SteeringOutput CalculateSteering(float deltaT, SteeringAgent* pAgent) override;
+};
 #endif
 
 

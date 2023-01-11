@@ -14,7 +14,8 @@ public:
 
 	Elite::EPhysicsCircleShape GetSource() const;
 	int GetPriority() const;
-
+	float GetRadius() const;
+	Senses GetType() const;
 private:
 	//--- Datamembers ---
 	Senses m_Sense{};

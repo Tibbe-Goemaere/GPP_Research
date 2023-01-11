@@ -52,4 +52,14 @@ int InterestSource::GetPriority() const
 	return m_Priority;
 }
 
+float InterestSource::GetRadius() const
+{
+	return m_Radius;
+}
+
+InterestSource::Senses InterestSource::GetType() const
+{
+	return m_Sense;
+}
+
 

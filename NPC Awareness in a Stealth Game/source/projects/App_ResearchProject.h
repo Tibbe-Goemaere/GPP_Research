@@ -16,6 +16,7 @@ class SteeringNpcAgent;
 class Seek;
 class Arrive;
 class Patrol;
+class Turn;
 class InterestRecord;
 class InterestSource;
 
@@ -44,11 +45,13 @@ private:
 	Patrol* m_pPatrolBehavior = nullptr;
 	Seek* m_pSeekBehavior = nullptr;
 	Arrive* m_pArriveBehavior = nullptr;
+	Turn* m_pTurnBehavior = nullptr;
 	TargetData m_Target = {};
 	float m_AgentRadius = 1.0f;
 
 	std::vector<SteeringNpcAgent*> m_pNpcAgents{};
 	float m_NpcSpeed = 8.0f;
+	float m_Angle{};
 	// --Level--
 	std::vector<NavigationColliderElement*> m_vNavigationColliders = {};
 
@@ -76,6 +79,8 @@ private:
 	// --Visualisation-- //
 	std::vector<BaseAgent*> m_pDeadBodies;
 	std::vector<Elite::EPhysicsCircleShape> m_pSounds;
+
+	
 	// --Helper Functions-- //
 	void SwitchCurrentInterest();
 

@@ -251,3 +251,14 @@ SteeringOutput Patrol::CalculateSteering(float deltaT, SteeringAgent* pAgent)
 
 	return steering;
 }
+
+//TURN
+//****
+SteeringOutput Turn::CalculateSteering(float deltaT, SteeringAgent* pAgent)
+{
+	SteeringOutput steering{};
+
+	steering.AngularVelocity += pAgent->GetMaxAngularSpeed() / 15.f;
+
+	return steering;
+}

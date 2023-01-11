@@ -29,6 +29,7 @@ App_ResearchProject::~App_ResearchProject()
 	SAFE_DELETE(m_pPatrolBehavior);
 	SAFE_DELETE(m_pSeekBehavior);
 	SAFE_DELETE(m_pArriveBehavior);
+	SAFE_DELETE(m_pTurnBehavior);
 	for (auto npc : m_pNpcAgents)
 	{
 		SAFE_DELETE(npc);
@@ -72,6 +73,7 @@ void App_ResearchProject::Start()
 	m_pPatrolBehavior = new Patrol();
 	m_pSeekBehavior = new Seek();
 	m_pArriveBehavior = new Arrive();
+	m_pTurnBehavior = new Turn();
 
 	SteeringNpcAgent* agent = new SteeringNpcAgent();
 	agent->SetPosition(Vector2{20,20});
@@ -100,17 +102,33 @@ void App_ResearchProject::Update(float deltaTime)
 	{
 		SwitchCurrentInterest();
 	}
+
 	UpdateImGui();
 
 	for (auto npc : m_pNpcAgents)
 	{
-		npc->Update(deltaTime);
 		if (npc->CheckInterestSources(m_pInterestRecord->GetInterestSources()))
 		{
-			m_pArriveBehavior->SetTarget(npc->GetNextInterestSource().GetSource().position);
-			m_pArriveBehavior->SetArriveDistance(5.f);
-			npc->SetSteeringBehavior(m_pArriveBehavior);
+			if (npc->GetNextInterestSource().GetType() == InterestSource::Senses::Sight)
+			{
+				m_pArriveBehavior->SetTarget(npc->GetNextInterestSource().GetSource().position);
+				m_pArriveBehavior->SetArriveDistance(5.f);
+				npc->SetSteeringBehavior(m_pArriveBehavior);
+			}
+			else if (npc->GetNextInterestSource().GetType() == InterestSource::Senses::Sound)
+			{
+				m_pSeekBehavior->SetTarget(npc->GetNextInterestSource().GetSource().position);
+				npc->SetSteeringBehavior(m_pSeekBehavior);
+				if (npc->GetPosition().Distance(npc->GetNextInterestSource().GetSource().position) <= 1.f)
+				{
+					npc->SetAutoOrient(false);
+					npc->SetSteeringBehavior(m_pTurnBehavior);
+					
+				}
+			}
+
 		}
+		npc->Update(deltaTime);
 	}
 
 	for (auto deadBody : m_pDeadBodies)
