@@ -13,10 +13,26 @@ void SteeringNpcAgent::Update(float dt)
 {
 	SteeringAgent::Update(dt);
 	m_pVisionCone->UpdatePos(GetRotation(),GetPosition());
-	if (m_IsInvestegating)
+	//std::cout << GetRotation() << "\n";
+	switch (m_NextInterestSource.GetType())
 	{
-
+	case::InterestSource::Senses::Sight:
+		if (m_pSteeringBehavior)
+		{
+			
+		}
+		break;
+	case::InterestSource::Senses::Sound:
+		if (Elite::ToDegrees(GetRotation()) > Elite::ToDegrees(m_StartAngle) - 1.f &&
+			Elite::ToDegrees(GetRotation()) < Elite::ToDegrees(m_StartAngle) - 0.1f)
+		{
+			m_IsInvestegating = false;
+		}
+		break;
+	default:
+		break;
 	}
+	
 }
 
 void SteeringNpcAgent::Render(float dt)
@@ -88,16 +104,13 @@ bool SteeringNpcAgent::CheckInterestSources(const std::list<InterestSource>& int
 				}
 			}
 		}
-		//std::cout << "check other\n";
+		
 		if (interestSource.GetType() == InterestSource::Senses::Sound)
 		{
-			//std::cout << "check it\n";
 			if (IsInRadius(interestSource.GetSource().position,interestSource.GetRadius()))
 			{
-				//std::cout << "isInRadius\n";
 				if (interestSource.GetPriority() < nextInterestSource.GetPriority())
 				{
-					//std::cout << "nextSource\n";
 					nextInterestSource = interestSource;
 				}
 			}

@@ -25,15 +25,21 @@ public:
 	bool IsInvestegating();
 
 	InterestSource GetNextInterestSource() { return m_NextInterestSource; };
+
+	void SetPatrolBehavior(ISteeringBehavior* pBehavior) { m_pPatrolBehavior = pBehavior; }
+	ISteeringBehavior* GetPatrolBehavior() const { return m_pPatrolBehavior; }
+
+	bool FinishedInvestigating() { return !m_IsInvestegating; };
+	void SetStartAngle() { m_StartAngle = GetRotation(); };
+
 protected:
 	//--- Datamembers ---
 	VisionCone* m_pVisionCone{};
 	bool m_IsInvestegating{false};
-
+	float m_StartAngle{};
 	ISteeringBehavior* m_pPatrolBehavior = nullptr;
-	ISteeringBehavior* m_pInvestigateBehavior = nullptr;
 
-	InterestSource m_NextInterestSource = InterestSource(InterestSource::Senses::Sight, 0, 0, { 0,0 }, false);
+	InterestSource m_NextInterestSource = InterestSource();
 	//--- Helper Functions ---
 	bool HasInterest(InterestSource& interestSource);
 };

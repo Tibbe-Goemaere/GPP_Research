@@ -179,6 +179,25 @@ public:
 	//Turn Behaviour
 	SteeringOutput CalculateSteering(float deltaT, SteeringAgent* pAgent) override;
 };
+
+///////////////////////////////////////
+//LOOKAROUND
+//**********
+
+class LookAround : public ISteeringBehavior
+{
+public:
+	LookAround() = default;
+	virtual ~LookAround() = default;
+
+	//LookAround Behaviour
+	SteeringOutput CalculateSteering(float deltaT, SteeringAgent* pAgent) override;
+	bool IsDone() { return m_IsReady; };
+private:
+	float m_Timer{};
+	bool m_IsLookingUp{ true };
+	bool m_IsReady{ false };
+};
 #endif
 
 

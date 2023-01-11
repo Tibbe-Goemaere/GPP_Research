@@ -17,6 +17,7 @@ class Seek;
 class Arrive;
 class Patrol;
 class Turn;
+class LookAround;
 class InterestRecord;
 class InterestSource;
 
@@ -46,6 +47,7 @@ private:
 	Seek* m_pSeekBehavior = nullptr;
 	Arrive* m_pArriveBehavior = nullptr;
 	Turn* m_pTurnBehavior = nullptr;
+	LookAround* m_pLookAroundBehavior = nullptr;
 	TargetData m_Target = {};
 	float m_AgentRadius = 1.0f;
 
@@ -71,7 +73,7 @@ private:
 	void UpdateImGui();
 
 	// --InterestSources-- //
-	enum class Interests{DeadBody,QuitSound};
+	enum class Interests{DeadBody,QuitSound,LoudSound};
 	Interests m_CurrentInterest{};
 	void UpdateInterestsUI();
 	void PlaceInterestSource(const Elite::Vector2& pos);

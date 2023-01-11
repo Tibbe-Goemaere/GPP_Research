@@ -259,6 +259,43 @@ SteeringOutput Turn::CalculateSteering(float deltaT, SteeringAgent* pAgent)
 	SteeringOutput steering{};
 
 	steering.AngularVelocity += pAgent->GetMaxAngularSpeed() / 15.f;
+  
+	return steering;
+}
+
+//LOOKAROUND
+//**********
+SteeringOutput LookAround::CalculateSteering(float deltaT, SteeringAgent* pAgent)
+{
+	SteeringOutput steering{};
+	m_Timer += deltaT;
+	const float maxTime{ 2 };
+	
+	if (m_IsLookingUp)
+	{
+		if (m_Timer >= 2)
+		{
+			m_IsLookingUp = false;
+			m_Timer = 0;
+		}
+	}
+	else
+	{
+		if (m_Timer >= 4)
+		{
+			m_IsReady = true;
+		}
+	}
+
+	if (m_IsLookingUp)
+	{
+		steering.AngularVelocity += pAgent->GetMaxAngularSpeed() / 15.f;
+		m_IsReady = false;
+	}
+	else
+	{
+		steering.AngularVelocity -= pAgent->GetMaxAngularSpeed() / 15.f;
+	}
 
 	return steering;
 }

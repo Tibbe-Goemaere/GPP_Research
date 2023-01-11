@@ -9,6 +9,7 @@ public:
 	void UpdatePos(const float rotation, const Elite::Vector2& origin);
 	void Render() const;
 	bool IsOverlapping(Elite::Vector2 pos);
+	float GetFOVAngle() { return m_FOVAngle; };
 private:
 	float m_Rotation{};
 	Elite::Vector2 m_Origin{};

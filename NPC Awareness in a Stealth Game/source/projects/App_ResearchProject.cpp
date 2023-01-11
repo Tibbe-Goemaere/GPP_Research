@@ -30,6 +30,7 @@ App_ResearchProject::~App_ResearchProject()
 	SAFE_DELETE(m_pSeekBehavior);
 	SAFE_DELETE(m_pArriveBehavior);
 	SAFE_DELETE(m_pTurnBehavior);
+	SAFE_DELETE(m_pLookAroundBehavior);
 	for (auto npc : m_pNpcAgents)
 	{
 		SAFE_DELETE(npc);
@@ -74,6 +75,7 @@ void App_ResearchProject::Start()
 	m_pSeekBehavior = new Seek();
 	m_pArriveBehavior = new Arrive();
 	m_pTurnBehavior = new Turn();
+	m_pLookAroundBehavior = new LookAround();
 
 	SteeringNpcAgent* agent = new SteeringNpcAgent();
 	agent->SetPosition(Vector2{20,20});
@@ -83,6 +85,7 @@ void App_ResearchProject::Start()
 	agent->SetMaxLinearSpeed(m_NpcSpeed);
 	agent->SetAutoOrient(true);
 	agent->SetMass(0.1f);
+	agent->SetPatrolBehavior(m_pPatrolBehavior);
 	m_pNpcAgents.push_back(agent);
 }
 
@@ -98,12 +101,14 @@ void App_ResearchProject::Update(float deltaTime)
 	}
 	
 	//Switch between interest sources
-	if (INPUTMANAGER->IsMouseButtonUp(InputMouseButton::eRight))
+	if (INPUTMANAGER->IsMouseButtonUp(InputMouseButton::eMiddle))
 	{
 		SwitchCurrentInterest();
 	}
 
 	UpdateImGui();
+
+	m_pInterestRecord->Update(deltaTime);
 
 	for (auto npc : m_pNpcAgents)
 	{
@@ -111,22 +116,42 @@ void App_ResearchProject::Update(float deltaTime)
 		{
 			if (npc->GetNextInterestSource().GetType() == InterestSource::Senses::Sight)
 			{
-				m_pArriveBehavior->SetTarget(npc->GetNextInterestSource().GetSource().position);
-				m_pArriveBehavior->SetArriveDistance(5.f);
-				npc->SetSteeringBehavior(m_pArriveBehavior);
+				if (npc->GetPosition().Distance(npc->GetNextInterestSource().GetSource().position) <= 6.f)
+				{
+					npc->SetAutoOrient(false);
+					npc->SetSteeringBehavior(m_pLookAroundBehavior);
+				}
+				else
+				{
+					npc->SetAutoOrient(true);
+					m_pArriveBehavior->SetTarget(npc->GetNextInterestSource().GetSource().position);
+					m_pArriveBehavior->SetArriveDistance(5.f);
+					npc->SetSteeringBehavior(m_pArriveBehavior);
+					npc->SetStartAngle();
+				}
 			}
 			else if (npc->GetNextInterestSource().GetType() == InterestSource::Senses::Sound)
 			{
-				m_pSeekBehavior->SetTarget(npc->GetNextInterestSource().GetSource().position);
-				npc->SetSteeringBehavior(m_pSeekBehavior);
 				if (npc->GetPosition().Distance(npc->GetNextInterestSource().GetSource().position) <= 1.f)
 				{
 					npc->SetAutoOrient(false);
 					npc->SetSteeringBehavior(m_pTurnBehavior);
-					
+				}
+				else
+				{
+					npc->SetAutoOrient(true);
+					m_pSeekBehavior->SetTarget(npc->GetNextInterestSource().GetSource().position);
+					npc->SetSteeringBehavior(m_pSeekBehavior);
+					npc->SetStartAngle();
 				}
 			}
 
+		}
+		else if (npc->FinishedInvestigating() || m_pLookAroundBehavior->IsDone()) 
+		{
+			m_pInterestRecord->RemoveInterest(npc->GetNextInterestSource());
+			npc->SetAutoOrient(true);
+			npc->SetSteeringBehavior(npc->GetPatrolBehavior());
 		}
 		npc->Update(deltaTime);
 	}
@@ -157,14 +182,7 @@ void App_ResearchProject::Render(float deltaTime) const
 		npc->Render(deltaTime);
 	}
 
-	for (auto deadBody : m_pDeadBodies)
-	{
-		deadBody->Render(deltaTime);
-	}
-	for (const EPhysicsCircleShape& sounds : m_pSounds)
-	{
-		DEBUGRENDERER2D->DrawCircle(sounds.position, sounds.radius, Color{1,0,0},0);
-	}
+	m_pInterestRecord->Render(deltaTime);
 }
 
 void App_ResearchProject::UpdateImGui()
@@ -243,11 +261,12 @@ void App_ResearchProject::UpdateInterestsUI()
 		case App_ResearchProject::Interests::QuitSound:
 			ImGui::Text("QuitSound");
 			break;
+		case App_ResearchProject::Interests::LoudSound:
+			ImGui::Text("LoudSound");
+			break;
 		default:
 			break;
 		}
-		
-		
 	}
 #pragma endregion
 #endif
@@ -257,23 +276,18 @@ void App_ResearchProject::PlaceInterestSource(const Vector2& pos)
 {
 	BaseAgent* pDeadBody{};
 	const float smallRadius{ 10.f };
+	const float bigRadius{ 15.f };
 
 	switch (m_CurrentInterest)
 	{
 	case App_ResearchProject::Interests::DeadBody:
-		m_pInterestRecord->AddInterestSource(InterestSource(InterestSource::Senses::Sight, 7, m_AgentRadius, pos, true));
-
-		//Add the dead body in
-		pDeadBody = new BaseAgent(m_AgentRadius);
-		pDeadBody->SetBodyColor(Color{ 0,0,0 });
-		pDeadBody->SetPosition(pos);
-		m_pDeadBodies.push_back(pDeadBody);
+		m_pInterestRecord->AddInterestSource(InterestSource(InterestSource::Senses::Sight, 7, m_AgentRadius, pos, { 0,0,0 }, true));
 		break;
 	case App_ResearchProject::Interests::QuitSound:
-		
-		m_pInterestRecord->AddInterestSource(InterestSource(InterestSource::Senses::Sound, 4, smallRadius, pos,false,10.f));
-		//Add visualisation of the sound in
-		m_pSounds.push_back(Elite::EPhysicsCircleShape{pos,smallRadius,});
+		m_pInterestRecord->AddInterestSource(InterestSource(InterestSource::Senses::Sound, 4, smallRadius, pos,{1,0,0}, false, 5.f));
+		break;
+	case App_ResearchProject::Interests::LoudSound:
+		m_pInterestRecord->AddInterestSource(InterestSource(InterestSource::Senses::Sound, 5, bigRadius, pos, { 1,0,0 }, false, 10.f));
 		break;
 	default:
 		break;
@@ -288,6 +302,9 @@ void App_ResearchProject::SwitchCurrentInterest()
 		m_CurrentInterest = Interests::QuitSound;
 		break;
 	case App_ResearchProject::Interests::QuitSound:
+		m_CurrentInterest = Interests::LoudSound;
+		break;
+	case App_ResearchProject::Interests::LoudSound:
 		m_CurrentInterest = Interests::DeadBody;
 		break;
 	default:
