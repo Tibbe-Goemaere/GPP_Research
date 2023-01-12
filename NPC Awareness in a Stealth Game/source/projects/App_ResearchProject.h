@@ -68,12 +68,11 @@ private:
 	std::vector<Elite::Portal> m_Portals;
 	std::vector<Elite::Vector2> m_DebugNodePositions;
 	static bool sShowPolygon;
-	static bool sShowGraph;
 
 	void UpdateImGui();
 
 	// --InterestSources-- //
-	enum class Interests{DeadBody,QuitSound,LoudSound};
+	enum class Interests { DeadBody, QuitSound, LoudSound };
 	Interests m_CurrentInterest{};
 	void UpdateInterestsUI();
 	void PlaceInterestSource(const Elite::Vector2& pos);
@@ -82,7 +81,7 @@ private:
 	std::vector<BaseAgent*> m_pDeadBodies;
 	std::vector<Elite::EPhysicsCircleShape> m_pSounds;
 
-	
+
 	// --Helper Functions-- //
 	void SwitchCurrentInterest();
 

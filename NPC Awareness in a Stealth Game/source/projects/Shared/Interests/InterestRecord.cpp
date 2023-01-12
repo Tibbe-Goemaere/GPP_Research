@@ -9,12 +9,12 @@ InterestRecord::InterestRecord()
 
 InterestRecord::~InterestRecord()
 {
-	
+
 }
 
 void InterestRecord::Update(float dt)
 {
-	for (InterestSource& interest: m_Interests)
+	for (InterestSource& interest : m_Interests)
 	{
 		interest.Update(dt);
 		if ((interest.GetLifetime() <= 0 && !interest.LivesForever()) || interest.HasBeenInvestigated())
@@ -35,13 +35,13 @@ void InterestRecord::Render(float dt) const
 		switch (interest.GetType())
 		{
 		case::InterestSource::Senses::Sight:
-			DEBUGRENDERER2D->DrawCircle(pos,radius,color,0);
-			DEBUGRENDERER2D->DrawSegment({pos.x + radius,pos.y}, { pos.x - radius,pos.y }, color);
-			DEBUGRENDERER2D->DrawSegment({ pos.x,pos.y + radius}, { pos.x,pos.y - radius }, color);
-		break;
+			DEBUGRENDERER2D->DrawCircle(pos, radius, color, 0);
+			DEBUGRENDERER2D->DrawSegment({ pos.x + radius,pos.y }, { pos.x - radius,pos.y }, color);
+			DEBUGRENDERER2D->DrawSegment({ pos.x,pos.y + radius }, { pos.x,pos.y - radius }, color);
+			break;
 		case::InterestSource::Senses::Sound:
 			DEBUGRENDERER2D->DrawCircle(pos, radius, color, 0);
-		break;
+			break;
 		default:
 			break;
 		}

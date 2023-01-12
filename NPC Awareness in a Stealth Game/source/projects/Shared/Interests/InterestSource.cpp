@@ -2,15 +2,15 @@
 #include "InterestSource.h"
 #include "framework/EliteMath/EMath.h"
 
-InterestSource::InterestSource(const Senses& sense, const int priority, const float radius, const Elite::Vector2 pos,const Elite::Color color, const bool livesForever, const float lifeTime)
-	:m_Sense{sense}
-	,m_Priority{priority}
-	,m_Radius{radius}
-	,m_Position{pos}
-	,m_LivesForever{livesForever}
-	,m_LifeTime{lifeTime}
-	,m_Color{color}
-	,m_HasBeenInvestigated{false}
+InterestSource::InterestSource(const Senses& sense, const int priority, const float radius, const Elite::Vector2 pos, const Elite::Color color, const bool livesForever, const float lifeTime)
+	:m_Sense{ sense }
+	, m_Priority{ priority }
+	, m_Radius{ radius }
+	, m_Position{ pos }
+	, m_LivesForever{ livesForever }
+	, m_LifeTime{ lifeTime }
+	, m_Color{ color }
+	, m_HasBeenInvestigated{ false }
 {
 }
 
@@ -19,9 +19,9 @@ InterestSource::~InterestSource()
 }
 
 InterestSource::InterestSource(const InterestSource& other)
-	:InterestSource(other.m_Sense,other.m_Priority,other.m_Radius,other.m_Position,other.m_Color,other.m_LivesForever,other.m_LifeTime)
+	:InterestSource(other.m_Sense, other.m_Priority, other.m_Radius, other.m_Position, other.m_Color, other.m_LivesForever, other.m_LifeTime)
 {
-	
+
 }
 
 InterestSource& InterestSource::operator=(const InterestSource& other)
@@ -38,7 +38,7 @@ InterestSource& InterestSource::operator=(const InterestSource& other)
 
 bool InterestSource::operator==(const InterestSource& interestSource) const
 {
-	return m_Sense == interestSource.m_Sense && 
+	return m_Sense == interestSource.m_Sense &&
 		m_Priority == interestSource.m_Priority &&
 		m_Radius == interestSource.m_Radius &&
 		m_Position == interestSource.m_Position &&
@@ -104,5 +104,3 @@ void InterestSource::IsInvestigated()
 {
 	m_HasBeenInvestigated = true;
 }
-
-

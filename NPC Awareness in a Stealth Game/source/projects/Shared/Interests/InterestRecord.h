@@ -17,4 +17,3 @@ private:
 	//Member Variables
 	std::list<InterestSource> m_Interests{};
 };
-

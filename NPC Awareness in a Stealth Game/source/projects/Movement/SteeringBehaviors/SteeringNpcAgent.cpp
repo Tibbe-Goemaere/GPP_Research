@@ -14,7 +14,7 @@ SteeringNpcAgent::~SteeringNpcAgent()
 void SteeringNpcAgent::Update(float dt)
 {
 	SteeringAgent::Update(dt);
-	m_pVisionCone->UpdatePos(GetRotation(),GetPosition());
+	m_pVisionCone->UpdatePos(GetRotation(), GetPosition());
 	//std::cout << GetRotation() << "\n";
 	switch (m_NextInterestSource.GetType())
 	{
@@ -34,7 +34,6 @@ void SteeringNpcAgent::Update(float dt)
 	{
 		m_Timer += dt;
 	}
-	std::cout << m_Timer << "\n";
 }
 
 void SteeringNpcAgent::Render(float dt)
@@ -63,7 +62,7 @@ bool SteeringNpcAgent::CheckInterestSources(const std::list<InterestSource>& int
 	std::vector<InterestSource> validInterestSources{};
 	for (auto interestSource : interestSources)
 	{
-		auto path = Elite::NavMeshPathfinding::FindPath(interestSource.GetSource().position,GetPosition(), pNavGraph, debugNodePositions, portals);
+		auto path = Elite::NavMeshPathfinding::FindPath(interestSource.GetSource().position, GetPosition(), pNavGraph, debugNodePositions, portals);
 		if (interestSource.GetType() == InterestSource::Senses::Sight)
 		{
 			if (IsInVision(interestSource.GetSource().position) && path.size() <= 2)
@@ -81,8 +80,8 @@ bool SteeringNpcAgent::CheckInterestSources(const std::list<InterestSource>& int
 			else if (IsInRadius(interestSource.GetSource().position, interestSource.GetRadius()) && GetPathDistance(path) <= interestSource.GetRadius())
 			{
 				validInterestSources.push_back(interestSource);
-			}	
-		}		
+			}
+		}
 	}
 
 	if (validInterestSources.size() == 0)
@@ -91,11 +90,6 @@ bool SteeringNpcAgent::CheckInterestSources(const std::list<InterestSource>& int
 	}
 
 	InterestSource nextInterestSource{ validInterestSources[0] };
-	if (m_IsInvestegating)
-	{
-		nextInterestSource = m_NextInterestSource;
-	}
-
 
 	for (auto interestSource : validInterestSources)
 	{
@@ -104,8 +98,11 @@ bool SteeringNpcAgent::CheckInterestSources(const std::list<InterestSource>& int
 			nextInterestSource = interestSource;
 		}
 	}
-
-	m_NextInterestSource = nextInterestSource;
+	if (nextInterestSource.GetPriority() >= m_NextInterestSource.GetPriority())
+	{
+		m_NextInterestSource = nextInterestSource;
+	}
+	
 	m_IsInvestegating = true;
 	return true;
 }
@@ -124,6 +121,11 @@ bool SteeringNpcAgent::HasLookedAround()
 		return true;
 	}
 	return false;
+}
+
+void SteeringNpcAgent::IsDoneInvestigating()
+{
+	m_NextInterestSource = InterestSource();
 }
 
 bool SteeringNpcAgent::HasInterest(InterestSource& interestSource)

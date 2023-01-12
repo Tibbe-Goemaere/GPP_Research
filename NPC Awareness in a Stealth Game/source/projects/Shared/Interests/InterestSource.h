@@ -6,7 +6,7 @@ class InterestSource
 public:
 	enum class Senses { Sight, Sound };
 
-	InterestSource(const Senses& sense = Senses::Sight, const int priority = 0,const float radius = 0, const Elite::Vector2 pos = {}, const Elite::Color color = {}, const bool livesForever = true, const float lifeTime = 0.f);
+	InterestSource(const Senses& sense = Senses::Sight, const int priority = 0, const float radius = 0, const Elite::Vector2 pos = {}, const Elite::Color color = {}, const bool livesForever = true, const float lifeTime = 0.f);
 	~InterestSource();
 	//C++ make the class copyable
 	InterestSource(const InterestSource& other);
@@ -25,7 +25,7 @@ public:
 	Elite::Color GetColor() const;
 	bool HasBeenInvestigated() const;
 	void IsInvestigated();
-	
+
 private:
 	//--- Datamembers ---
 	Senses m_Sense{};
@@ -37,4 +37,3 @@ private:
 	Elite::Color m_Color{};
 	bool m_HasBeenInvestigated{};
 };
-

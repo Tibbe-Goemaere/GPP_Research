@@ -28,7 +28,7 @@ public:
 	bool IsInRadius(Elite::Vector2 pos, float radius);
 
 	bool CheckInterestSources(const std::list<InterestSource>& interestSources, Elite::NavGraph* pNavGraph, std::vector<Elite::Vector2> debugNodePositions, std::vector<Elite::Portal> portals);
-	
+
 	bool IsInvestegating();
 
 	InterestSource GetNextInterestSource() { return m_NextInterestSource; };
@@ -38,21 +38,21 @@ public:
 
 	bool FinishedInvestigating() const { return !m_IsInvestegating; };
 	void SetStartAngle() { m_StartAngle = GetRotation(); };
-	void StartLookingAround() {	m_IsLookingAround = true;	};
+	void StartLookingAround() { m_IsLookingAround = true; };
 	bool HasLookedAround();
 	float GetMaxLookAroundTime() const { return m_LookAroundTime; };
+	void IsDoneInvestigating();
 protected:
 	//--- Datamembers ---
 	VisionCone* m_pVisionCone{};
-	bool m_IsInvestegating{false};
+	bool m_IsInvestegating{ false };
 	float m_StartAngle{};
 	ISteeringBehavior* m_pPatrolBehavior = nullptr;
 	float m_Timer{};
-	const float m_LookAroundTime{4.f};
+	const float m_LookAroundTime{ 4.f };
 	InterestSource m_NextInterestSource = InterestSource();
 	bool m_IsLookingAround{ false };
 	//--- Helper Functions ---
 	bool HasInterest(InterestSource& interestSource);
 	float GetPathDistance(const std::vector <Elite::Vector2> path);
 };
-

@@ -16,7 +16,6 @@ using namespace Elite;
 
 //Statics
 bool App_ResearchProject::sShowPolygon = true;
-bool App_ResearchProject::sShowGraph = false;
 
 //Destructor
 App_ResearchProject::~App_ResearchProject()
@@ -42,7 +41,7 @@ App_ResearchProject::~App_ResearchProject()
 	}
 	m_pDeadBodies.clear();
 	SAFE_DELETE(m_pInterestRecord);
-	
+
 }
 
 //Functions
@@ -79,9 +78,9 @@ void App_ResearchProject::Start()
 	m_pLookAroundBehavior = new LookAround();
 
 	SteeringNpcAgent* agent = new SteeringNpcAgent();
-	agent->SetPosition(Vector2{20,20});
-	agent->SetVisionCone(VisionCone{ agent->GetRotation() ,agent->GetPosition()});
-	m_pPatrolBehavior->SetTargets(Vector2{20,20},Vector2{40,20});
+	agent->SetPosition(Vector2{ 20,20 });
+	agent->SetVisionCone(VisionCone{ agent->GetRotation() ,agent->GetPosition() });
+	m_pPatrolBehavior->SetTargets(Vector2{ 20,20 }, Vector2{ 40,20 });
 	agent->SetSteeringBehavior(m_pPatrolBehavior);
 	agent->SetMaxLinearSpeed(m_NpcSpeed);
 	agent->SetAutoOrient(true);
@@ -98,10 +97,10 @@ void App_ResearchProject::Update(float deltaTime)
 	{
 		auto mouseData = INPUTMANAGER->GetMouseData(Elite::InputType::eMouseButton, Elite::InputMouseButton::eLeft);
 		Elite::Vector2 mouseTarget = DEBUGRENDERER2D->GetActiveCamera()->ConvertScreenToWorld(
-		Elite::Vector2((float)mouseData.X, (float)mouseData.Y));
+			Elite::Vector2((float)mouseData.X, (float)mouseData.Y));
 		PlaceInterestSource(mouseTarget);
 	}
-	
+
 	//Switch between interest sources
 	if (INPUTMANAGER->IsMouseButtonUp(InputMouseButton::eMiddle))
 	{
@@ -114,7 +113,7 @@ void App_ResearchProject::Update(float deltaTime)
 
 	for (auto npc : m_pNpcAgents)
 	{
-		if (npc->CheckInterestSources(m_pInterestRecord->GetInterestSources(),m_pNavGraph,m_DebugNodePositions,m_Portals))
+		if (npc->CheckInterestSources(m_pInterestRecord->GetInterestSources(), m_pNavGraph, m_DebugNodePositions, m_Portals))
 		{
 			if (npc->GetNextInterestSource().GetType() == InterestSource::Senses::Sight)
 			{
@@ -146,14 +145,14 @@ void App_ResearchProject::Update(float deltaTime)
 					npc->SetAutoOrient(true);
 					m_pSeekBehavior->SetTarget(npc->GetNextInterestSource().GetSource().position);
 					npc->SetSteeringBehavior(m_pSeekBehavior);
-					npc->SetStartAngle();
 				}
 			}
 
 		}
-		else if (npc->FinishedInvestigating() || npc->HasLookedAround()) 
+		else if (npc->FinishedInvestigating() || npc->HasLookedAround())
 		{
 			m_pInterestRecord->RemoveInterest(npc->GetNextInterestSource());
+			npc->IsDoneInvestigating();
 			npc->SetAutoOrient(true);
 			npc->SetSteeringBehavior(npc->GetPatrolBehavior());
 		}
@@ -168,11 +167,6 @@ void App_ResearchProject::Update(float deltaTime)
 
 void App_ResearchProject::Render(float deltaTime) const
 {
-	if (sShowGraph)
-	{
-		m_GraphRenderer.RenderGraph(m_pNavGraph, true, true);
-	}
-
 	if (sShowPolygon)
 	{
 		DEBUGRENDERER2D->DrawPolygon(m_pNavGraph->GetNavMeshPolygon(),
@@ -228,7 +222,6 @@ void App_ResearchProject::UpdateImGui()
 		ImGui::Spacing();
 
 		ImGui::Checkbox("Show Polygon", &sShowPolygon);
-		ImGui::Checkbox("Show Graph", &sShowGraph);
 		ImGui::Spacing();
 		ImGui::Spacing();
 
@@ -288,7 +281,7 @@ void App_ResearchProject::PlaceInterestSource(const Vector2& pos)
 		m_pInterestRecord->AddInterestSource(InterestSource(InterestSource::Senses::Sight, 7, m_AgentRadius, pos, { 0,0,0 }, true));
 		break;
 	case App_ResearchProject::Interests::QuitSound:
-		m_pInterestRecord->AddInterestSource(InterestSource(InterestSource::Senses::Sound, 4, smallRadius, pos,{1,0,0}, false, 5.f));
+		m_pInterestRecord->AddInterestSource(InterestSource(InterestSource::Senses::Sound, 4, smallRadius, pos, { 1,0,0 }, false, 5.f));
 		break;
 	case App_ResearchProject::Interests::LoudSound:
 		m_pInterestRecord->AddInterestSource(InterestSource(InterestSource::Senses::Sound, 5, bigRadius, pos, { 1,0,0 }, false, 10.f));
