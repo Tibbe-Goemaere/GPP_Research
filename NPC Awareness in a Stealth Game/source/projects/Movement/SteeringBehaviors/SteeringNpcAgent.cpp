@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "SteeringNpcAgent.h"
+#include "framework\EliteAI\EliteNavigation\Algorithms\ENavGraphPathfinding.h"
+
 
 SteeringNpcAgent::~SteeringNpcAgent()
 {
@@ -17,10 +19,6 @@ void SteeringNpcAgent::Update(float dt)
 	switch (m_NextInterestSource.GetType())
 	{
 	case::InterestSource::Senses::Sight:
-		if (m_pSteeringBehavior)
-		{
-			
-		}
 		break;
 	case::InterestSource::Senses::Sound:
 		if (Elite::ToDegrees(GetRotation()) > Elite::ToDegrees(m_StartAngle) - 1.f &&
@@ -32,7 +30,11 @@ void SteeringNpcAgent::Update(float dt)
 	default:
 		break;
 	}
-	
+	if (m_IsLookingAround)
+	{
+		m_Timer += dt;
+	}
+	std::cout << m_Timer << "\n";
 }
 
 void SteeringNpcAgent::Render(float dt)
@@ -56,14 +58,15 @@ bool SteeringNpcAgent::IsInRadius(Elite::Vector2 pos, float radius)
 	return GetPosition().Distance(pos) <= radius + GetRadius();
 }
 
-bool SteeringNpcAgent::CheckInterestSources(const std::list<InterestSource>& interestSources)
+bool SteeringNpcAgent::CheckInterestSources(const std::list<InterestSource>& interestSources, Elite::NavGraph* pNavGraph, std::vector<Elite::Vector2> debugNodePositions, std::vector<Elite::Portal> portals)
 {
 	std::vector<InterestSource> validInterestSources{};
 	for (auto interestSource : interestSources)
 	{
+		auto path = Elite::NavMeshPathfinding::FindPath(interestSource.GetSource().position,GetPosition(), pNavGraph, debugNodePositions, portals);
 		if (interestSource.GetType() == InterestSource::Senses::Sight)
 		{
-			if (IsInVision(interestSource.GetSource().position))
+			if (IsInVision(interestSource.GetSource().position) && path.size() <= 2)
 			{
 				validInterestSources.push_back(interestSource);
 			}
@@ -71,13 +74,15 @@ bool SteeringNpcAgent::CheckInterestSources(const std::list<InterestSource>& int
 
 		if (interestSource.GetType() == InterestSource::Senses::Sound)
 		{
-			if (IsInRadius(interestSource.GetSource().position, interestSource.GetRadius()))
+			if (IsInRadius(interestSource.GetSource().position, interestSource.GetRadius()) && path.size() <= 2)
 			{
 				validInterestSources.push_back(interestSource);
 			}
-			
-		}
-		
+			else if (IsInRadius(interestSource.GetSource().position, interestSource.GetRadius()) && GetPathDistance(path) <= interestSource.GetRadius())
+			{
+				validInterestSources.push_back(interestSource);
+			}	
+		}		
 	}
 
 	if (validInterestSources.size() == 0)
@@ -94,29 +99,12 @@ bool SteeringNpcAgent::CheckInterestSources(const std::list<InterestSource>& int
 
 	for (auto interestSource : validInterestSources)
 	{
-		if (interestSource.GetType() == InterestSource::Senses::Sight)
+		if (interestSource.GetPriority() >= nextInterestSource.GetPriority())
 		{
-			if (IsInVision(interestSource.GetSource().position))
-			{
-				if (interestSource.GetPriority() < nextInterestSource.GetPriority())
-				{
-					nextInterestSource = interestSource;
-				}
-			}
+			nextInterestSource = interestSource;
 		}
-		
-		if (interestSource.GetType() == InterestSource::Senses::Sound)
-		{
-			if (IsInRadius(interestSource.GetSource().position,interestSource.GetRadius()))
-			{
-				if (interestSource.GetPriority() < nextInterestSource.GetPriority())
-				{
-					nextInterestSource = interestSource;
-				}
-			}
-		}
-		
 	}
+
 	m_NextInterestSource = nextInterestSource;
 	m_IsInvestegating = true;
 	return true;
@@ -127,7 +115,29 @@ bool SteeringNpcAgent::IsInvestegating()
 	return m_IsInvestegating;
 }
 
+bool SteeringNpcAgent::HasLookedAround()
+{
+	if (m_Timer >= m_LookAroundTime)
+	{
+		m_IsLookingAround = false;
+		m_Timer = 0;
+		return true;
+	}
+	return false;
+}
+
 bool SteeringNpcAgent::HasInterest(InterestSource& interestSource)
 {
 	return true;
+}
+
+float SteeringNpcAgent::GetPathDistance(const std::vector <Elite::Vector2> path)
+{
+	float distance{};
+	for (size_t i = 0; i < path.size() - 1; i++)
+	{
+		distance += path[i].Distance(path[i + 1]);
+	}
+	std::cout << distance << "\n";
+	return distance;
 }

@@ -54,15 +54,16 @@ void App_ResearchProject::Start()
 	DEBUGRENDERER2D->GetActiveCamera()->SetCenter(Elite::Vector2(12.9361f, 0.2661f));
 
 	//----------- WORLD ------------
-	m_vNavigationColliders.push_back(new NavigationColliderElement(Elite::Vector2(25.f, 12.f), 45.0f, 7.0f));
-	m_vNavigationColliders.push_back(new NavigationColliderElement(Elite::Vector2(-35.f, 7.f), 14.0f, 10.0f));
-	m_vNavigationColliders.push_back(new NavigationColliderElement(Elite::Vector2(-13.f, -8.f), 30.0f, 2.0f));
-	m_vNavigationColliders.push_back(new NavigationColliderElement(Elite::Vector2(15.f, -21.f), 50.0f, 3.0f));
-	m_vNavigationColliders.push_back(new NavigationColliderElement(Elite::Vector2(70.f, -45.f), 20.f, 3.0f));
+	m_vNavigationColliders.push_back(new NavigationColliderElement(Elite::Vector2(45.f, 20.f), 1.0f, 30.0f));
+	//m_vNavigationColliders.push_back(new NavigationColliderElement(Elite::Vector2(-35.f, 7.f), 14.0f, 10.0f));
+	//m_vNavigationColliders.push_back(new NavigationColliderElement(Elite::Vector2(-13.f, -8.f), 30.0f, 2.0f));
+	//m_vNavigationColliders.push_back(new NavigationColliderElement(Elite::Vector2(15.f, -21.f), 50.0f, 3.0f));
+	//m_vNavigationColliders.push_back(new NavigationColliderElement(Elite::Vector2(70.f, -45.f), 20.f, 3.0f));
+	//m_vNavigationColliders.push_back(new NavigationColliderElement(Elite::Vector2(80.f, 10.f), 1.f, 10.f));
 
 	//----------- NAVMESH  ------------
 	std::list<Elite::Vector2> baseBox
-	{ { -90, 60 },{ -90, -60 },{ 90, -60 },{ 90, 60 } };
+	{ { 0, 100 },{ 0, 0 },{ 100, 0 },{ 100, 100 } };
 
 	m_pNavGraph = new Elite::NavGraph(Elite::Polygon(baseBox), m_AgentRadius);
 
@@ -86,6 +87,7 @@ void App_ResearchProject::Start()
 	agent->SetAutoOrient(true);
 	agent->SetMass(0.1f);
 	agent->SetPatrolBehavior(m_pPatrolBehavior);
+	m_pLookAroundBehavior->SetMaxTime(agent->GetMaxLookAroundTime());
 	m_pNpcAgents.push_back(agent);
 }
 
@@ -112,13 +114,14 @@ void App_ResearchProject::Update(float deltaTime)
 
 	for (auto npc : m_pNpcAgents)
 	{
-		if (npc->CheckInterestSources(m_pInterestRecord->GetInterestSources()))
+		if (npc->CheckInterestSources(m_pInterestRecord->GetInterestSources(),m_pNavGraph,m_DebugNodePositions,m_Portals))
 		{
 			if (npc->GetNextInterestSource().GetType() == InterestSource::Senses::Sight)
 			{
 				if (npc->GetPosition().Distance(npc->GetNextInterestSource().GetSource().position) <= 6.f)
 				{
 					npc->SetAutoOrient(false);
+					npc->StartLookingAround();
 					npc->SetSteeringBehavior(m_pLookAroundBehavior);
 				}
 				else
@@ -128,6 +131,7 @@ void App_ResearchProject::Update(float deltaTime)
 					m_pArriveBehavior->SetArriveDistance(5.f);
 					npc->SetSteeringBehavior(m_pArriveBehavior);
 					npc->SetStartAngle();
+					m_pLookAroundBehavior->Reset();
 				}
 			}
 			else if (npc->GetNextInterestSource().GetType() == InterestSource::Senses::Sound)
@@ -147,7 +151,7 @@ void App_ResearchProject::Update(float deltaTime)
 			}
 
 		}
-		else if (npc->FinishedInvestigating() || m_pLookAroundBehavior->IsDone()) 
+		else if (npc->FinishedInvestigating() || npc->HasLookedAround()) 
 		{
 			m_pInterestRecord->RemoveInterest(npc->GetNextInterestSource());
 			npc->SetAutoOrient(true);

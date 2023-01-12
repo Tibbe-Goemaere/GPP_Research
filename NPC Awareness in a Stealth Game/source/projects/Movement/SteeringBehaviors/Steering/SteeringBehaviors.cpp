@@ -269,11 +269,10 @@ SteeringOutput LookAround::CalculateSteering(float deltaT, SteeringAgent* pAgent
 {
 	SteeringOutput steering{};
 	m_Timer += deltaT;
-	const float maxTime{ 2 };
 	
 	if (m_IsLookingUp)
 	{
-		if (m_Timer >= 2)
+		if (m_Timer >= m_MaxTime / 4.f)
 		{
 			m_IsLookingUp = false;
 			m_Timer = 0;
@@ -281,16 +280,16 @@ SteeringOutput LookAround::CalculateSteering(float deltaT, SteeringAgent* pAgent
 	}
 	else
 	{
-		if (m_Timer >= 4)
+		if (m_Timer >= m_MaxTime / 2.f)
 		{
-			m_IsReady = true;
+			m_IsLookingUp = true;
+			m_Timer = 0;
 		}
 	}
 
 	if (m_IsLookingUp)
 	{
 		steering.AngularVelocity += pAgent->GetMaxAngularSpeed() / 15.f;
-		m_IsReady = false;
 	}
 	else
 	{

@@ -192,11 +192,12 @@ public:
 
 	//LookAround Behaviour
 	SteeringOutput CalculateSteering(float deltaT, SteeringAgent* pAgent) override;
-	bool IsDone() { return m_IsReady; };
+	void SetMaxTime(float maxTime) { m_MaxTime = maxTime; };
+	void Reset() { m_Timer = 0; m_IsLookingUp = true; };
 private:
 	float m_Timer{};
+	float m_MaxTime{};
 	bool m_IsLookingUp{ true };
-	bool m_IsReady{ false };
 };
 #endif
 
