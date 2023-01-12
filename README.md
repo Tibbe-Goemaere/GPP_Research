@@ -8,4 +8,5 @@ We want to make the AI in stealth games feel believable, if you want to distract
 
 In a stealth game there are multiple types of interests. If you take assassins creed for example, in the game you can shoot a barrel to make an explosion or whistle at guards. Both of these actions will distract 
 
-t498 × 280he guards
+
+![afbeelding](https://user-images.githubusercontent.com/114002199/212176083-19ff1788-3e6a-4c76-bd90-390425d25715.png)
