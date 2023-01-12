@@ -26,6 +26,7 @@ Sound is represented by the red circle.
 But it's not that easy, there are obstacles in our way which block sounds and vision, with our level and all these obstacles we made a Navigation mesh*, on this mesh we can call A-star pathfinding* to find the path between our npc and the source of the interest. 
 
 *For more information:
+
 NavMesh :
 https://en.wikipedia.org/wiki/Navigation_mesh
 
